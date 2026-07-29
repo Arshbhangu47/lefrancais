@@ -1,4 +1,6 @@
+import Link from "next/link";
 import { notFound } from "next/navigation";
+import LessonQuiz from "../../../components/LessonQuiz";
 import { lessons } from "../../../data/lessons";
 
 type Props = {
@@ -7,55 +9,70 @@ type Props = {
   }>;
 };
 
+export function generateStaticParams() {
+  return lessons.map((lesson) => ({
+    slug: lesson.slug,
+  }));
+}
+
 export default async function LessonPage({ params }: Props) {
   const { slug } = await params;
 
-  const lesson = lessons.find((l) => l.slug === slug);
+  const lesson = lessons.find((item) => item.slug === slug);
 
   if (!lesson) {
     notFound();
   }
 
-  return (
-    <div className="mx-auto max-w-5xl px-6 py-16">
+  const currentIndex = lessons.findIndex(
+    (item) => item.slug === lesson.slug
+  );
 
-      <span className="rounded-full bg-blue-100 px-3 py-1 text-sm font-semibold text-blue-700">
-        {lesson.level}
-      </span>
+  const nextLesson = lessons[currentIndex + 1];
+
+  return (
+    <main className="mx-auto max-w-5xl px-6 py-16">
+      <Link
+        href="/lessons"
+        className="text-sm font-semibold text-blue-600 hover:text-blue-800"
+      >
+        ← Back to lessons
+      </Link>
+
+      <div className="mt-8 flex items-center gap-3">
+        <span className="rounded-full bg-blue-100 px-4 py-2 text-sm font-semibold text-blue-700">
+          {lesson.level}
+        </span>
+
+        <span className="text-sm text-gray-500">
+          Reading lesson
+        </span>
+      </div>
 
       <h1 className="mt-5 text-5xl font-bold">
         {lesson.title}
       </h1>
 
-      {/* Reading */}
-
-      <div className="mt-12 rounded-2xl border bg-white p-8 shadow-sm">
-
+      <section className="mt-12 rounded-2xl border bg-white p-8 shadow-sm">
         <h2 className="text-3xl font-bold">
-          📖 Reading Passage
+          Reading Passage
         </h2>
 
         <p className="mt-6 whitespace-pre-line text-lg leading-9 text-gray-700">
           {lesson.passage}
         </p>
+      </section>
 
-      </div>
-
-      {/* Vocabulary */}
-
-      <div className="mt-12 rounded-2xl border bg-white p-8 shadow-sm">
-
+      <section className="mt-12 rounded-2xl border bg-white p-8 shadow-sm">
         <h2 className="text-3xl font-bold">
-          📚 Vocabulary
+          Vocabulary
         </h2>
 
         <div className="mt-8 grid gap-4 md:grid-cols-2">
-
           {lesson.vocabulary.map((word) => (
-
             <div
               key={word.french}
-              className="rounded-xl border p-5"
+              className="rounded-xl border bg-gray-50 p-5"
             >
               <h3 className="text-xl font-bold">
                 {word.french}
@@ -64,55 +81,30 @@ export default async function LessonPage({ params }: Props) {
               <p className="mt-2 text-gray-600">
                 {word.english}
               </p>
-
             </div>
-
           ))}
-
         </div>
+      </section>
 
-      </div>
+      <LessonQuiz questions={lesson.quiz} />
 
-      {/* Quiz */}
-
-      <div className="mt-12 rounded-2xl border bg-white p-8 shadow-sm">
-
-        <h2 className="text-3xl font-bold">
-          📝 Quiz
-        </h2>
-
-        {lesson.quiz.map((question) => (
-
-          <div
-            key={question.question}
-            className="mt-8"
+      <div className="mt-12 flex justify-end">
+        {nextLesson ? (
+          <Link
+            href={`/lessons/${nextLesson.slug}`}
+            className="rounded-xl bg-blue-600 px-7 py-4 font-semibold text-white hover:bg-blue-700"
           >
-
-            <h3 className="mb-5 text-xl font-semibold">
-              {question.question}
-            </h3>
-
-            <div className="space-y-3">
-
-              {question.options.map((option) => (
-
-                <button
-                  key={option}
-                  className="block w-full rounded-lg border px-5 py-4 text-left transition hover:bg-blue-50"
-                >
-                  {option}
-                </button>
-
-              ))}
-
-            </div>
-
-          </div>
-
-        ))}
-
+            Next Lesson: {nextLesson.title} →
+          </Link>
+        ) : (
+          <Link
+            href="/lessons"
+            className="rounded-xl bg-blue-600 px-7 py-4 font-semibold text-white hover:bg-blue-700"
+          >
+            View All Lessons
+          </Link>
+        )}
       </div>
-
-    </div>
+    </main>
   );
 }
