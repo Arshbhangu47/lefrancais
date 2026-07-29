@@ -1,3 +1,6 @@
+import { notFound } from "next/navigation";
+import { lessons } from "../../../data/lessons";
+
 type Props = {
   params: Promise<{
     slug: string;
@@ -7,28 +10,109 @@ type Props = {
 export default async function LessonPage({ params }: Props) {
   const { slug } = await params;
 
+  const lesson = lessons.find((l) => l.slug === slug);
+
+  if (!lesson) {
+    notFound();
+  }
+
   return (
-    <div className="mx-auto max-w-5xl px-6 py-20">
-      <span className="rounded bg-blue-100 px-3 py-1 text-blue-700">
-        Lesson
+    <div className="mx-auto max-w-5xl px-6 py-16">
+
+      <span className="rounded-full bg-blue-100 px-3 py-1 text-sm font-semibold text-blue-700">
+        {lesson.level}
       </span>
 
-      <h1 className="mt-6 text-5xl font-bold capitalize">
-        {slug.replace(/-/g, " ")}
+      <h1 className="mt-5 text-5xl font-bold">
+        {lesson.title}
       </h1>
 
-      <p className="mt-8 text-xl text-gray-600">
-        This is where the reading passage will appear.
-      </p>
+      {/* Reading */}
 
-      <div className="mt-12 rounded-2xl border p-8">
-        <h2 className="text-2xl font-bold">Reading Passage</h2>
+      <div className="mt-12 rounded-2xl border bg-white p-8 shadow-sm">
 
-        <p className="mt-6 leading-8">
-          Bonjour ! Je m'appelle Pierre. J'habite à Montréal.
-          J'aime le café et les croissants.
+        <h2 className="text-3xl font-bold">
+          📖 Reading Passage
+        </h2>
+
+        <p className="mt-6 whitespace-pre-line text-lg leading-9 text-gray-700">
+          {lesson.passage}
         </p>
+
       </div>
+
+      {/* Vocabulary */}
+
+      <div className="mt-12 rounded-2xl border bg-white p-8 shadow-sm">
+
+        <h2 className="text-3xl font-bold">
+          📚 Vocabulary
+        </h2>
+
+        <div className="mt-8 grid gap-4 md:grid-cols-2">
+
+          {lesson.vocabulary.map((word) => (
+
+            <div
+              key={word.french}
+              className="rounded-xl border p-5"
+            >
+              <h3 className="text-xl font-bold">
+                {word.french}
+              </h3>
+
+              <p className="mt-2 text-gray-600">
+                {word.english}
+              </p>
+
+            </div>
+
+          ))}
+
+        </div>
+
+      </div>
+
+      {/* Quiz */}
+
+      <div className="mt-12 rounded-2xl border bg-white p-8 shadow-sm">
+
+        <h2 className="text-3xl font-bold">
+          📝 Quiz
+        </h2>
+
+        {lesson.quiz.map((question) => (
+
+          <div
+            key={question.question}
+            className="mt-8"
+          >
+
+            <h3 className="mb-5 text-xl font-semibold">
+              {question.question}
+            </h3>
+
+            <div className="space-y-3">
+
+              {question.options.map((option) => (
+
+                <button
+                  key={option}
+                  className="block w-full rounded-lg border px-5 py-4 text-left transition hover:bg-blue-50"
+                >
+                  {option}
+                </button>
+
+              ))}
+
+            </div>
+
+          </div>
+
+        ))}
+
+      </div>
+
     </div>
   );
 }
