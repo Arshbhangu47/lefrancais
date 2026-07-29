@@ -14,24 +14,27 @@ export async function createClient() {
     );
   }
 
-  return createServerClient(supabaseUrl, supabaseKey, {
-    cookies: {
-      getAll() {
-        return cookieStore.getAll();
-      },
+  return createServerClient(
+    supabaseUrl,
+    supabaseKey,
+    {
+      cookies: {
+        getAll() {
+          return cookieStore.getAll();
+        },
 
-      setAll(cookiesToSet) {
-        try {
-          cookiesToSet.forEach(
-            ({ name, value, options }) => {
-              cookieStore.set(name, value, options);
-            }
-          );
-        } catch {
-          // Server Components cannot always modify cookies.
-          // Authentication proxy support will be added next.
-        }
+        setAll(cookiesToSet) {
+          try {
+            cookiesToSet.forEach(
+              ({ name, value, options }) => {
+                cookieStore.set(name, value, options);
+              }
+            );
+          } catch {
+            // Proxy handles cookie refreshing for Server Components.
+          }
+        },
       },
-    },
-  });
+    }
+  );
 }
