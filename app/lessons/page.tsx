@@ -1,4 +1,4 @@
-import LessonCard from "../../components/LessonCard";
+import LessonBrowser from "../../components/LessonBrowser";
 import { lessons } from "../../data/lessons";
 
 export default function LessonsPage() {
@@ -14,23 +14,13 @@ export default function LessonsPage() {
         </h1>
 
         <p className="mt-5 text-lg leading-8 text-gray-600">
-          Build your French reading skills with structured lessons,
-          vocabulary and interactive comprehension questions.
+          Build your French reading skills with structured
+          lessons, vocabulary and interactive comprehension
+          questions.
         </p>
       </div>
 
-      <div className="mt-12 grid gap-8 md:grid-cols-2 lg:grid-cols-3">
-        {lessons.map((lesson) => (
-          <LessonCard
-            key={lesson.slug}
-            title={lesson.title}
-            level={lesson.level}
-            description={lesson.description}
-            slug={lesson.slug}
-            estimatedMinutes={lesson.estimatedMinutes}
-          />
-        ))}
-      </div>
+      <LessonBrowser lessons={lessons} />
     </main>
   );
 }

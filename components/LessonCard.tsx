@@ -6,6 +6,7 @@ type LessonCardProps = {
   description: string;
   slug: string;
   estimatedMinutes: number;
+  completed?: boolean;
 };
 
 export default function LessonCard({
@@ -14,17 +15,24 @@ export default function LessonCard({
   description,
   slug,
   estimatedMinutes,
+  completed = false,
 }: LessonCardProps) {
   return (
     <article className="flex h-full flex-col rounded-2xl border bg-white p-6 shadow-sm transition hover:-translate-y-1 hover:shadow-lg">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <span className="rounded-full bg-blue-100 px-3 py-1 text-sm font-semibold text-blue-700">
           {level}
         </span>
 
-        <span className="text-sm text-gray-500">
-          {estimatedMinutes} minutes
-        </span>
+        {completed ? (
+          <span className="rounded-full bg-green-100 px-3 py-1 text-sm font-semibold text-green-700">
+            Completed ✓
+          </span>
+        ) : (
+          <span className="text-sm text-gray-500">
+            {estimatedMinutes} minutes
+          </span>
+        )}
       </div>
 
       <h2 className="mt-5 text-2xl font-bold">
@@ -39,7 +47,7 @@ export default function LessonCard({
         href={`/lessons/${slug}`}
         className="mt-6 inline-block rounded-lg bg-blue-600 px-5 py-3 text-center font-semibold text-white hover:bg-blue-700"
       >
-        Start Lesson
+        {completed ? "Review Lesson" : "Start Lesson"}
       </Link>
     </article>
   );

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import LessonCompleteButton from "../../../components/LessonCompleteButton";
 import LessonQuiz from "../../../components/LessonQuiz";
 import { lessons } from "../../../data/lessons";
 
@@ -112,6 +113,20 @@ export default async function LessonPage({ params }: Props) {
       </section>
 
       <LessonQuiz questions={lesson.quiz} />
+
+      <section className="mt-12 rounded-2xl border border-green-200 bg-green-50 p-8">
+        <h2 className="text-2xl font-bold">
+          Finished this lesson?
+        </h2>
+
+        <p className="mt-3 text-gray-700">
+          Mark it complete to update your progress.
+        </p>
+
+        <div className="mt-6">
+          <LessonCompleteButton slug={lesson.slug} />
+        </div>
+      </section>
 
       <div className="mt-12 flex flex-col justify-between gap-4 sm:flex-row">
         <div>
