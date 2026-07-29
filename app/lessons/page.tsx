@@ -1,67 +1,36 @@
 import LessonCard from "../../components/LessonCard";
-
-const lessons = [
-  {
-    title: "Greetings",
-    level: "A1",
-    slug: "greetings",
-    description: "Learn common greetings and introductions.",
-  },
-  {
-    title: "Family",
-    level: "A1",
-    slug: "family",
-    description: "Talk about your family members.",
-  },
-  {
-    title: "Food",
-    level: "A1",
-    slug: "food",
-    description: "Vocabulary for food and restaurants.",
-  },
-  {
-    title: "Shopping",
-    level: "A2",
-    slug: "shopping",
-    description: "Learn shopping conversations.",
-  },
-  {
-    title: "Travel",
-    level: "A2",
-    slug: "travel",
-    description: "Travel vocabulary and reading.",
-  },
-  {
-    title: "Environment",
-    level: "B1",
-    slug: "environment",
-    description: "Read about climate and nature.",
-  },
-];
+import { lessons } from "../../data/lessons";
 
 export default function LessonsPage() {
   return (
-    <div className="mx-auto max-w-7xl px-6 py-20">
+    <main className="mx-auto max-w-7xl px-6 py-20">
+      <div className="max-w-3xl">
+        <span className="font-semibold text-blue-600">
+          Reading practice
+        </span>
 
-      <h1 className="text-5xl font-bold">
-        Reading Lessons
-      </h1>
+        <h1 className="mt-3 text-5xl font-bold">
+          French Lessons
+        </h1>
 
-      <p className="mt-4 text-gray-600">
-        Choose a lesson to begin learning French.
-      </p>
+        <p className="mt-5 text-lg leading-8 text-gray-600">
+          Build your French reading skills with structured lessons,
+          vocabulary and interactive comprehension questions.
+        </p>
+      </div>
 
       <div className="mt-12 grid gap-8 md:grid-cols-2 lg:grid-cols-3">
-
         {lessons.map((lesson) => (
           <LessonCard
             key={lesson.slug}
-            {...lesson}
+            title={lesson.title}
+            level={lesson.level}
+            description={lesson.description}
+            slug={lesson.slug}
+            estimatedMinutes={lesson.estimatedMinutes}
           />
         ))}
-
       </div>
-
-    </div>
+    </main>
   );
 }

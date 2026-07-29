@@ -9,6 +9,8 @@ type Props = {
   }>;
 };
 
+export const dynamicParams = false;
+
 export function generateStaticParams() {
   return lessons.map((lesson) => ({
     slug: lesson.slug,
@@ -28,24 +30,25 @@ export default async function LessonPage({ params }: Props) {
     (item) => item.slug === lesson.slug
   );
 
+  const previousLesson = lessons[currentIndex - 1];
   const nextLesson = lessons[currentIndex + 1];
 
   return (
     <main className="mx-auto max-w-5xl px-6 py-16">
       <Link
         href="/lessons"
-        className="text-sm font-semibold text-blue-600 hover:text-blue-800"
+        className="font-semibold text-blue-600 hover:text-blue-800"
       >
         ← Back to lessons
       </Link>
 
-      <div className="mt-8 flex items-center gap-3">
+      <div className="mt-8 flex flex-wrap items-center gap-3">
         <span className="rounded-full bg-blue-100 px-4 py-2 text-sm font-semibold text-blue-700">
           {lesson.level}
         </span>
 
         <span className="text-sm text-gray-500">
-          Reading lesson
+          {lesson.estimatedMinutes} minute lesson
         </span>
       </div>
 
@@ -53,14 +56,36 @@ export default async function LessonPage({ params }: Props) {
         {lesson.title}
       </h1>
 
-      <section className="mt-12 rounded-2xl border bg-white p-8 shadow-sm">
-        <h2 className="text-3xl font-bold">
-          Reading Passage
+      <p className="mt-5 max-w-3xl text-lg leading-8 text-gray-600">
+        {lesson.description}
+      </p>
+
+      <section className="mt-12 rounded-2xl border bg-blue-50 p-8">
+        <h2 className="text-2xl font-bold">
+          Learning objectives
         </h2>
 
-        <p className="mt-6 whitespace-pre-line text-lg leading-9 text-gray-700">
+        <ul className="mt-5 space-y-3">
+          {lesson.objectives.map((objective) => (
+            <li
+              key={objective}
+              className="flex gap-3 text-gray-700"
+            >
+              <span className="font-bold text-blue-600">✓</span>
+              <span>{objective}</span>
+            </li>
+          ))}
+        </ul>
+      </section>
+
+      <section className="mt-12 rounded-2xl border bg-white p-8 shadow-sm">
+        <h2 className="text-3xl font-bold">
+          Reading passage
+        </h2>
+
+        <div className="mt-6 whitespace-pre-line text-lg leading-9 text-gray-700">
           {lesson.passage}
-        </p>
+        </div>
       </section>
 
       <section className="mt-12 rounded-2xl border bg-white p-8 shadow-sm">
@@ -88,22 +113,35 @@ export default async function LessonPage({ params }: Props) {
 
       <LessonQuiz questions={lesson.quiz} />
 
-      <div className="mt-12 flex justify-end">
-        {nextLesson ? (
-          <Link
-            href={`/lessons/${nextLesson.slug}`}
-            className="rounded-xl bg-blue-600 px-7 py-4 font-semibold text-white hover:bg-blue-700"
-          >
-            Next Lesson: {nextLesson.title} →
-          </Link>
-        ) : (
-          <Link
-            href="/lessons"
-            className="rounded-xl bg-blue-600 px-7 py-4 font-semibold text-white hover:bg-blue-700"
-          >
-            View All Lessons
-          </Link>
-        )}
+      <div className="mt-12 flex flex-col justify-between gap-4 sm:flex-row">
+        <div>
+          {previousLesson && (
+            <Link
+              href={`/lessons/${previousLesson.slug}`}
+              className="inline-block rounded-xl border px-6 py-4 font-semibold hover:bg-gray-50"
+            >
+              ← {previousLesson.title}
+            </Link>
+          )}
+        </div>
+
+        <div>
+          {nextLesson ? (
+            <Link
+              href={`/lessons/${nextLesson.slug}`}
+              className="inline-block rounded-xl bg-blue-600 px-6 py-4 font-semibold text-white hover:bg-blue-700"
+            >
+              {nextLesson.title} →
+            </Link>
+          ) : (
+            <Link
+              href="/lessons"
+              className="inline-block rounded-xl bg-blue-600 px-6 py-4 font-semibold text-white hover:bg-blue-700"
+            >
+              View all lessons
+            </Link>
+          )}
+        </div>
       </div>
     </main>
   );
