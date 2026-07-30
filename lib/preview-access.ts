@@ -1,4 +1,5 @@
-export const PREVIEW_COOKIE_NAME = "lefrancais-preview-access";
+export const PREVIEW_COOKIE_NAME =
+  "lefrancais-preview-access";
 
 export async function hashPreviewPassword(
   password: string

@@ -10,39 +10,36 @@ import {
 export async function unlockPreview(formData: FormData) {
   const submittedPassword = String(
     formData.get("password") ?? ""
-  );
+  ).trim();
 
-  const correctPassword =
-    process.env.SITE_PREVIEW_PASSWORD;
+  const previewPassword =
+    process.env.SITE_PREVIEW_PASSWORD?.trim();
 
-  if (!correctPassword) {
+  if (!previewPassword) {
     redirect(
-      "/preview-access?error=Preview+password+is+not+configured."
+      "/preview-access?error=Preview+password+is+not+configured"
     );
   }
 
-  if (submittedPassword !== correctPassword) {
+  if (submittedPassword !== previewPassword) {
     redirect(
-      "/preview-access?error=Incorrect+preview+password."
+      "/preview-access?error=Incorrect+preview+password"
     );
   }
 
   const cookieStore = await cookies();
+  const cookieValue =
+    await hashPreviewPassword(previewPassword);
 
-  const hashedPassword =
-    await hashPreviewPassword(correctPassword);
-
-  cookieStore.set(
-    PREVIEW_COOKIE_NAME,
-    hashedPassword,
-    {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
-      path: "/",
-      maxAge: 60 * 60 * 24 * 30,
-    }
-  );
+  cookieStore.set({
+    name: PREVIEW_COOKIE_NAME,
+    value: cookieValue,
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+    path: "/",
+    maxAge: 60 * 60 * 24 * 30,
+  });
 
   redirect("/");
 }
