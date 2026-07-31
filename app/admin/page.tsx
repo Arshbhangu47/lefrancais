@@ -88,15 +88,13 @@ export default async function AdminPage({
       )}
 
       <section className="mt-12 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
-        <div>
-          <h2 className="text-2xl font-bold text-slate-950">
-            Database Lessons
-          </h2>
+        <h2 className="text-2xl font-bold text-slate-950">
+          Lessons
+        </h2>
 
-          <p className="mt-2 text-slate-600">
-            {lessons?.length ?? 0} lessons stored in Supabase.
-          </p>
-        </div>
+        <p className="mt-2 text-slate-600">
+          {lessons?.length ?? 0} lessons stored in Supabase.
+        </p>
 
         {error && (
           <p className="mt-8 text-red-700">
@@ -107,18 +105,18 @@ export default async function AdminPage({
         {!error && (!lessons || lessons.length === 0) && (
           <div className="mt-8 rounded-xl border border-dashed border-slate-300 p-10 text-center">
             <h3 className="text-xl font-bold text-slate-950">
-              No database lessons yet
+              No lessons yet
             </h3>
 
             <p className="mt-3 text-slate-600">
-              Create your first lesson using the admin form.
+              Create your first lesson to begin.
             </p>
           </div>
         )}
 
         {lessons && lessons.length > 0 && (
           <div className="mt-8 overflow-x-auto">
-            <table className="w-full min-w-[700px] text-left">
+            <table className="w-full min-w-[800px] text-left">
               <thead className="border-b border-slate-200">
                 <tr>
                   <th className="px-4 py-3">Title</th>
@@ -126,6 +124,9 @@ export default async function AdminPage({
                   <th className="px-4 py-3">Duration</th>
                   <th className="px-4 py-3">Status</th>
                   <th className="px-4 py-3">Updated</th>
+                  <th className="px-4 py-3 text-right">
+                    Action
+                  </th>
                 </tr>
               </thead>
 
@@ -169,6 +170,15 @@ export default async function AdminPage({
                       {new Date(
                         lesson.updated_at
                       ).toLocaleDateString()}
+                    </td>
+
+                    <td className="px-4 py-4 text-right">
+                      <Link
+                        href={`/admin/lessons/${lesson.id}/edit`}
+                        className="inline-block rounded-lg border border-blue-200 px-4 py-2 font-semibold text-blue-700 hover:bg-blue-50"
+                      >
+                        Edit
+                      </Link>
                     </td>
                   </tr>
                 ))}
