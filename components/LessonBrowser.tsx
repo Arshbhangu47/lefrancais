@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import type { Lesson } from "../data/lessons";
+import type { Lesson } from "../types/lesson";
 import LessonCard from "./LessonCard";
 
 type LessonBrowserProps = {
@@ -88,7 +88,15 @@ export default function LessonBrowser({
       ? 0
       : Math.round((completedCount / lessons.length) * 100);
 
-  const levels: LevelFilter[] = ["ALL", "A1", "A2", "B1"];
+  const levels: LevelFilter[] = [
+  "ALL",
+  "A1",
+  "A2",
+  "B1",
+  "B2",
+  "C1",
+  "C2",
+];
 
   return (
     <>
