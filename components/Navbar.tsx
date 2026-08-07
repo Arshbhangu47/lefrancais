@@ -4,10 +4,26 @@ import Link from "next/link";
 import { useState } from "react";
 
 const navigationLinks = [
-  { href: "/", label: "Home" },
-  { href: "/lessons", label: "Lessons" },
-  { href: "/about", label: "About" },
-  { href: "/contact", label: "Contact" },
+  {
+    href: "/",
+    label: "Home",
+  },
+  {
+    href: "/courses",
+    label: "Courses",
+  },
+  {
+    href: "/lessons",
+    label: "Lessons",
+  },
+  {
+    href: "/about",
+    label: "About",
+  },
+  {
+    href: "/contact",
+    label: "Contact",
+  },
 ];
 
 export default function Navbar() {
