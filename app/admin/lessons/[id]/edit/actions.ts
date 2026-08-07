@@ -16,6 +16,11 @@ type QuizInput = {
   options: string[];
 };
 
+type UsefulExpression = {
+  french: string;
+  english: string;
+};
+
 const validLevels = [
   "A1",
   "A2",
@@ -35,44 +40,83 @@ function createSlug(value: string) {
     .replace(/^-+|-+$/g, "");
 }
 
-function errorUrl(lessonId: string, message: string) {
+function errorUrl(
+  lessonId: string,
+  message: string
+) {
   return `/admin/lessons/${lessonId}/edit?error=${encodeURIComponent(
     message
   )}`;
 }
 
-function parseArray<T>(value: FormDataEntryValue | null): T[] {
+function parseArray<T>(
+  value: FormDataEntryValue | null
+): T[] {
   if (typeof value !== "string") {
     return [];
   }
 
   try {
     const parsed: unknown = JSON.parse(value);
-    return Array.isArray(parsed) ? (parsed as T[]) : [];
+
+    if (Array.isArray(parsed)) {
+      return parsed as T[];
+    }
+
+    return [];
   } catch {
     return [];
   }
 }
 
+function parseUsefulExpressions(
+  value: string
+): UsefulExpression[] {
+  return value
+    .split("\n")
+    .map((line) => {
+      const [french, ...englishParts] =
+        line.split("|");
+
+      return {
+        french: french?.trim() ?? "",
+        english: englishParts
+          .join("|")
+          .trim(),
+      };
+    })
+    .filter(
+      (item) =>
+        item.french &&
+        item.english
+    );
+}
+
 async function requireAdmin() {
-  const supabase = await createClient();
+  const supabase =
+    await createClient();
 
   const { data: claimsData } =
     await supabase.auth.getClaims();
 
-  const userId = claimsData?.claims?.sub;
+  const userId =
+    claimsData?.claims?.sub;
 
   if (!userId) {
     redirect("/login");
   }
 
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("role")
-    .eq("id", userId)
-    .single();
+  const { data: profile } =
+    await supabase
+      .from("profiles")
+      .select("role")
+      .eq("id", userId)
+      .single();
 
-  if (!profile || profile.role !== "admin") {
+  if (
+    !profile ||
+    profile.role !== "admin"
+  ) {
     redirect("/");
   }
 
@@ -86,14 +130,23 @@ export async function updateLesson(
   lessonId: string,
   formData: FormData
 ) {
-  const { supabase } = await requireAdmin();
+  const { supabase } =
+    await requireAdmin();
+
+  // -----------------------------
+  // BASIC LESSON INFORMATION
+  // -----------------------------
 
   const title = String(
     formData.get("title") ?? ""
   ).trim();
 
+  const suppliedSlug = String(
+    formData.get("slug") ?? ""
+  ).trim();
+
   const slug = createSlug(
-    String(formData.get("slug") ?? title)
+    suppliedSlug || title
   );
 
   const level = String(
@@ -117,7 +170,8 @@ export async function updateLesson(
   );
 
   const status =
-    formData.get("status") === "published"
+    formData.get("status") ===
+    "published"
       ? "published"
       : "draft";
 
@@ -125,27 +179,120 @@ export async function updateLesson(
     formData.get("objectives") ?? ""
   )
     .split("\n")
-    .map((objective) => objective.trim())
+    .map((objective) =>
+      objective.trim()
+    )
     .filter(Boolean);
 
-  const rawVocabulary = parseArray<VocabularyInput>(
-    formData.get("vocabularyJson")
-  );
+  // -----------------------------
+  // COURSE INFORMATION
+  // -----------------------------
 
-  const vocabulary = rawVocabulary
-    .map((word) => ({
-      french: String(word.french ?? "").trim(),
-      english: String(word.english ?? "").trim(),
-    }))
-    .filter((word) => word.french || word.english);
+  const courseId =
+    String(
+      formData.get("courseId") ?? ""
+    ).trim() || null;
 
-  const rawQuiz = parseArray<QuizInput>(
-    formData.get("quizJson")
-  );
+  const dayValue = String(
+    formData.get("dayNumber") ?? ""
+  ).trim();
+
+  const dayNumber =
+    dayValue.length > 0
+      ? Number(dayValue)
+      : null;
+
+  const lessonFormat =
+    formData.get("lessonFormat") ===
+    "situational"
+      ? "situational"
+      : "general";
+
+  const accessTier =
+    formData.get("accessTier") ===
+    "premium"
+      ? "premium"
+      : "free";
+
+  // -----------------------------
+  // PRACTICAL LESSON CONTENT
+  // -----------------------------
+
+  const scenario = String(
+    formData.get("scenario") ?? ""
+  ).trim();
+
+  const dialogue = String(
+    formData.get("dialogue") ?? ""
+  ).trim();
+
+  const canadaNote = String(
+    formData.get("canadaNote") ?? ""
+  ).trim();
+
+  const commonMistake = String(
+    formData.get("commonMistake") ?? ""
+  ).trim();
+
+  const practicePrompt = String(
+    formData.get("practicePrompt") ??
+      ""
+  ).trim();
+
+  const yourTurnPrompt = String(
+    formData.get("yourTurnPrompt") ??
+      ""
+  ).trim();
+
+  const usefulExpressions =
+    parseUsefulExpressions(
+      String(
+        formData.get(
+          "usefulExpressions"
+        ) ?? ""
+      )
+    );
+
+  // -----------------------------
+  // VOCABULARY
+  // -----------------------------
+
+  const rawVocabulary =
+    parseArray<VocabularyInput>(
+      formData.get("vocabularyJson")
+    );
+
+  const vocabulary =
+    rawVocabulary
+      .map((word) => ({
+        french: String(
+          word.french ?? ""
+        ).trim(),
+
+        english: String(
+          word.english ?? ""
+        ).trim(),
+      }))
+      .filter(
+        (word) =>
+          word.french ||
+          word.english
+      );
+
+  // -----------------------------
+  // QUIZ
+  // -----------------------------
+
+  const rawQuiz =
+    parseArray<QuizInput>(
+      formData.get("quizJson")
+    );
 
   const quiz = rawQuiz
     .map((item) => ({
-      question: String(item.question ?? "").trim(),
+      question: String(
+        item.question ?? ""
+      ).trim(),
 
       correctAnswer: String(
         item.correctAnswer ?? ""
@@ -157,11 +304,16 @@ export async function updateLesson(
 
       options: Array.from(
         new Set(
-          (Array.isArray(item.options)
-            ? item.options
-            : []
+          (
+            Array.isArray(
+              item.options
+            )
+              ? item.options
+              : []
           )
-            .map((option) => String(option).trim())
+            .map((option) =>
+              String(option).trim()
+            )
             .filter(Boolean)
         )
       ),
@@ -173,7 +325,16 @@ export async function updateLesson(
         item.options.length > 0
     );
 
-  if (!title || !slug || !description || !passage) {
+  // -----------------------------
+  // VALIDATION
+  // -----------------------------
+
+  if (
+    !title ||
+    !slug ||
+    !description ||
+    !passage
+  ) {
     redirect(
       errorUrl(
         lessonId,
@@ -182,14 +343,21 @@ export async function updateLesson(
     );
   }
 
-  if (!validLevels.includes(level)) {
+  if (
+    !validLevels.includes(level)
+  ) {
     redirect(
-      errorUrl(lessonId, "Select a valid level.")
+      errorUrl(
+        lessonId,
+        "Select a valid level."
+      )
     );
   }
 
   if (
-    !Number.isInteger(estimatedMinutes) ||
+    !Number.isInteger(
+      estimatedMinutes
+    ) ||
     estimatedMinutes < 1
   ) {
     redirect(
@@ -200,12 +368,32 @@ export async function updateLesson(
     );
   }
 
+  if (
+    dayNumber !== null &&
+    (
+      !Number.isInteger(
+        dayNumber
+      ) ||
+      dayNumber < 1
+    )
+  ) {
+    redirect(
+      errorUrl(
+        lessonId,
+        "Day number must be a positive whole number."
+      )
+    );
+  }
+
   for (const word of vocabulary) {
-    if (!word.french || !word.english) {
+    if (
+      !word.french ||
+      !word.english
+    ) {
       redirect(
         errorUrl(
           lessonId,
-          "Every vocabulary item needs French and English."
+          "Every vocabulary item needs both French and English."
         )
       );
     }
@@ -239,34 +427,93 @@ export async function updateLesson(
     }
   }
 
-  const { error: lessonError } = await supabase
+  // -----------------------------
+  // UPDATE MAIN LESSON
+  // -----------------------------
+
+  const {
+    error: lessonError,
+  } = await supabase
     .from("lessons")
     .update({
       title,
       slug,
       level,
       description,
-      estimated_minutes: estimatedMinutes,
+
+      estimated_minutes:
+        estimatedMinutes,
+
       objectives,
       passage,
       status,
-      position: Number.isInteger(position)
-        ? position
-        : 0,
+
+      position:
+        Number.isInteger(position)
+          ? position
+          : dayNumber ?? 0,
+
+      course_id: courseId,
+
+      day_number:
+        dayNumber,
+
+      lesson_format:
+        lessonFormat,
+
+      access_tier:
+        accessTier,
+
+      scenario:
+        scenario || null,
+
+      dialogue:
+        dialogue || null,
+
+      canada_note:
+        canadaNote || null,
+
+      common_mistake:
+        commonMistake || null,
+
+      useful_expressions:
+        usefulExpressions,
+
+      practice_prompt:
+        practicePrompt || null,
+
+      your_turn_prompt:
+        yourTurnPrompt || null,
     })
     .eq("id", lessonId);
 
   if (lessonError) {
-    redirect(errorUrl(lessonId, lessonError.message));
+    redirect(
+      errorUrl(
+        lessonId,
+        lessonError.message
+      )
+    );
   }
 
-  const { error: vocabularyDeleteError } =
-    await supabase
-      .from("vocabulary")
-      .delete()
-      .eq("lesson_id", lessonId);
+  // -----------------------------
+  // REPLACE VOCABULARY
+  // -----------------------------
 
-  if (vocabularyDeleteError) {
+  const {
+    error:
+      vocabularyDeleteError,
+  } = await supabase
+    .from("vocabulary")
+    .delete()
+    .eq(
+      "lesson_id",
+      lessonId
+    );
+
+  if (
+    vocabularyDeleteError
+  ) {
     redirect(
       errorUrl(
         lessonId,
@@ -275,85 +522,161 @@ export async function updateLesson(
     );
   }
 
-  const { error: quizDeleteError } = await supabase
+  if (
+    vocabulary.length > 0
+  ) {
+    const { error } =
+      await supabase
+        .from("vocabulary")
+        .insert(
+          vocabulary.map(
+            (word, index) => ({
+              lesson_id:
+                lessonId,
+
+              french:
+                word.french,
+
+              english:
+                word.english,
+
+              position:
+                index,
+            })
+          )
+        );
+
+    if (error) {
+      redirect(
+        errorUrl(
+          lessonId,
+          error.message
+        )
+      );
+    }
+  }
+
+  // -----------------------------
+  // REPLACE QUIZ
+  // -----------------------------
+
+  const {
+    error: quizDeleteError,
+  } = await supabase
     .from("quiz_questions")
     .delete()
-    .eq("lesson_id", lessonId);
+    .eq(
+      "lesson_id",
+      lessonId
+    );
 
   if (quizDeleteError) {
     redirect(
-      errorUrl(lessonId, quizDeleteError.message)
+      errorUrl(
+        lessonId,
+        quizDeleteError.message
+      )
     );
-  }
-
-  if (vocabulary.length > 0) {
-    const { error } = await supabase
-      .from("vocabulary")
-      .insert(
-        vocabulary.map((word, index) => ({
-          lesson_id: lessonId,
-          french: word.french,
-          english: word.english,
-          position: index,
-        }))
-      );
-
-    if (error) {
-      redirect(errorUrl(lessonId, error.message));
-    }
   }
 
   for (
     let questionIndex = 0;
-    questionIndex < quiz.length;
+    questionIndex <
+    quiz.length;
     questionIndex += 1
   ) {
-    const question = quiz[questionIndex];
+    const question =
+      quiz[questionIndex];
 
-    const { data: savedQuestion, error } =
-      await supabase
-        .from("quiz_questions")
-        .insert({
-          lesson_id: lessonId,
-          question: question.question,
-          correct_answer: question.correctAnswer,
-          explanation:
-            question.explanation || null,
-          position: questionIndex,
-        })
-        .select("id")
-        .single();
+    const {
+      data: savedQuestion,
+      error: questionError,
+    } = await supabase
+      .from("quiz_questions")
+      .insert({
+        lesson_id:
+          lessonId,
 
-    if (error || !savedQuestion) {
+        question:
+          question.question,
+
+        correct_answer:
+          question.correctAnswer,
+
+        explanation:
+          question.explanation ||
+          null,
+
+        position:
+          questionIndex,
+      })
+      .select("id")
+      .single();
+
+    if (
+      questionError ||
+      !savedQuestion
+    ) {
       redirect(
         errorUrl(
           lessonId,
-          error?.message ??
+          questionError?.message ??
             "Unable to save quiz question."
         )
       );
     }
 
-    const { error: optionsError } = await supabase
+    const {
+      error: optionsError,
+    } = await supabase
       .from("quiz_options")
       .insert(
-        question.options.map((option, index) => ({
-          question_id: savedQuestion.id,
-          option_text: option,
-          position: index,
-        }))
+        question.options.map(
+          (
+            option,
+            optionIndex
+          ) => ({
+            question_id:
+              savedQuestion.id,
+
+            option_text:
+              option,
+
+            position:
+              optionIndex,
+          })
+        )
       );
 
     if (optionsError) {
       redirect(
-        errorUrl(lessonId, optionsError.message)
+        errorUrl(
+          lessonId,
+          optionsError.message
+        )
       );
     }
   }
 
-  revalidatePath("/admin");
-  revalidatePath("/lessons");
-  revalidatePath(`/lessons/${slug}`);
+  // -----------------------------
+  // REFRESH PAGES
+  // -----------------------------
+
+  revalidatePath(
+    "/admin"
+  );
+
+  revalidatePath(
+    "/courses"
+  );
+
+  revalidatePath(
+    "/lessons"
+  );
+
+  revalidatePath(
+    `/lessons/${slug}`
+  );
 
   redirect(
     `/admin/lessons/${lessonId}/edit?success=${encodeURIComponent(
@@ -365,21 +688,38 @@ export async function updateLesson(
 export async function deleteLesson(
   lessonId: string
 ) {
-  const { supabase } = await requireAdmin();
+  const { supabase } =
+    await requireAdmin();
 
-  const { error } = await supabase
-    .from("lessons")
-    .delete()
-    .eq("id", lessonId);
+  const { error } =
+    await supabase
+      .from("lessons")
+      .delete()
+      .eq(
+        "id",
+        lessonId
+      );
 
   if (error) {
     redirect(
-      errorUrl(lessonId, error.message)
+      errorUrl(
+        lessonId,
+        error.message
+      )
     );
   }
 
-  revalidatePath("/admin");
-  revalidatePath("/lessons");
+  revalidatePath(
+    "/admin"
+  );
+
+  revalidatePath(
+    "/courses"
+  );
+
+  revalidatePath(
+    "/lessons"
+  );
 
   redirect(
     "/admin?success=Lesson+deleted+successfully."
